@@ -12,6 +12,8 @@ public class Heroes : MonoBehaviour
     [SerializeField] private string OpponentTags;
     [SerializeField] private GameObject projectile;
 
+
+    float startTime;
     float coolDown;
     public LayerMask targetMele;
     Transform opponentPos;
@@ -26,6 +28,7 @@ public class Heroes : MonoBehaviour
 
     void Start()
     {
+        startTime = 2f;
         sideTag = gameObject.tag;
         coolDown = attackRate;
         timeAttack = attackRate;
@@ -35,39 +38,48 @@ public class Heroes : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
-        if ( opponentPos != null )
+        if (startTime >= 0)
         {
-            opponentPos = GameObject.FindGameObjectWithTag(OpponentTags).transform;
-            distance = Vector2.Distance(attackPosition.position,opponentPos.position);
+            startTime -= Time.deltaTime;
         }
         else
         {
-            anim.SetBool("walk",false);
-        }
-        if ( distance >= attackRange && opponentPos != null)
-        {
-            Move();
-        }
-        if (distance < attackRange)
-        {
-            anim.SetBool("walk",false);
-            if (coolDown >= 0)
+            if ( opponentPos != null )
             {
-                coolDown -= Time.deltaTime;
-               
+                opponentPos = GameObject.FindGameObjectWithTag(OpponentTags).transform;
+                distance = Vector2.Distance(attackPosition.position,opponentPos.position);
             }
             else
             {
-                Attack();
-                coolDown = attackRate;   
+                anim.SetBool("walk",false);
+                FindObjectOfType<GameManager>().Win(gameObject.name);
+            }
+            if ( distance >= attackRange && opponentPos != null)
+            {
+                Move();
+            }
+            
+            if (distance < attackRange)
+            {
+                anim.SetBool("walk",false);
+                if (coolDown >= 0)
+                {
+                    coolDown -= Time.deltaTime;
+               
+                }
+                else
+                {
+                    Attack();
+                    coolDown = attackRate;   
+                }
+            }
+
+            if (health <= 0)
+            {
+                Destroy(gameObject);
             }
         }
-
-        if (health <= 0)
-        {
-            Destroy(gameObject);
-        }
+        
     }
 
     public void Move()
